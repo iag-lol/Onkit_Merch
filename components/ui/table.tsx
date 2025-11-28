@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from "react";
+import { PropsWithChildren, ReactNode, TdHTMLAttributes } from "react";
 import clsx from "clsx";
 
 export const Table = ({ children, className }: PropsWithChildren<{ className?: string }>) => (
@@ -15,8 +15,8 @@ export const THead = ({ children }: PropsWithChildren) => (
 
 export const TH = ({ children }: PropsWithChildren) => <th className="px-4 py-3">{children}</th>;
 export const TR = ({ children }: PropsWithChildren) => <tr className="even:bg-slate-50/40">{children}</tr>;
-export const TD = ({ children, className }: PropsWithChildren<{ className?: string }>) => (
-  <td className={clsx("px-4 py-3 text-sm text-slate-800", className)}>{children}</td>
+export const TD = ({ children, className, ...props }: PropsWithChildren<TdHTMLAttributes<HTMLTableCellElement>>) => (
+  <td className={clsx("px-4 py-3 text-sm text-slate-800", className)} {...props}>{children}</td>
 );
 
 export const EmptyState = ({ icon, title, description }: { icon?: ReactNode; title: string; description?: string }) => (
