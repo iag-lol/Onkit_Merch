@@ -8,6 +8,7 @@ import { calcVat, formatCurrency, normalizeQuantity } from "@/lib/utils";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { getProducts } from "@/lib/services";
 import type { Product } from "@/lib/types";
+import { sendEmail } from "@/lib/email";
 
 interface FormState {
   nombre: string;
@@ -135,6 +136,32 @@ export default function CotizacionPage() {
             precio_unitario: item.product.basePrice
           }))
         );
+        await sendEmail({
+          to: "onkitmerch@outlook.com",
+          subject: `Nueva cotización de ${form.empresa}`,
+          html: `
+            <h2>Nueva cotización</h2>
+            <p><strong>Cliente:</strong> ${form.nombre} (${form.tipo})</p>
+            <p><strong>Empresa:</strong> ${form.empresa}</p>
+            <p><strong>Correo:</strong> ${form.email}</p>
+            <p><strong>Teléfono:</strong> ${form.telefono}</p>
+            <p><strong>Notas:</strong> ${form.notas || "Sin notas"}</p>
+            <h3>Productos</h3>
+            <ul>
+              ${itemsDetailed
+                .map(
+                  (line) =>
+                    `<li>${line.product.name} - ${line.quantity} uds - ${formatCurrency(
+                      line.product.basePrice
+                    )} c/u</li>`
+                )
+                .join("")}
+            </ul>
+            <p><strong>Neto:</strong> ${formatCurrency(totals.net)}</p>
+            <p><strong>IVA:</strong> ${formatCurrency(totals.vat)}</p>
+            <p><strong>Total:</strong> ${formatCurrency(totals.total)}</p>
+          `
+        });
       } else {
         console.info("Payload cotizacion (mock)", payload, itemsDetailed);
       }
