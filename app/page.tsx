@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { mockProducts, mockReviews } from "@/lib/mockData";
 import { formatCurrency } from "@/lib/utils";
+import { OrganizationSchema, LocalBusinessSchema, WebsiteSchema } from "@/components/seo/StructuredData";
 
 const segmentos = [
   { id: "empresa", title: "Empresas", desc: "Onboarding, regalos ejecutivos, activaciones internas." },
@@ -16,6 +17,9 @@ const segmentos = [
 export default function HomePage() {
   return (
     <main>
+      <OrganizationSchema />
+      <LocalBusinessSchema />
+      <WebsiteSchema />
       <section className="gradient-hero text-white">
         <div className="container-page grid items-center gap-10 py-16 md:grid-cols-2 md:py-20">
           <div className="space-y-6">
