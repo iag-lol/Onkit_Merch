@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, PropsWithChildren, useContext, useMemo, useState } from "react";
 import { Product } from "@/lib/types";
 import { calcVat, normalizeQuantity } from "@/lib/utils";
