@@ -61,7 +61,7 @@ export default function CotizacionesAdmin() {
                       onClick={async () => {
                         setConvertingId(quote.id);
                         try {
-                          await convertQuoteToSale(quote);
+                          await convertQuoteToSale(quote.id);
                           setQuotes((prev) =>
                             prev.map((q) => (q.id === quote.id ? { ...q, status: "venta" } : q))
                           );
