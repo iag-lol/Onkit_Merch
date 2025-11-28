@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { mockReviews } from "@/lib/mockData";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getApprovedReviews } from "@/lib/services";
+import { Review } from "@/lib/types";
 
 export default function ReviewsPage() {
   const [form, setForm] = useState({ nombre: "", tipo: "empresa", comentario: "", rating: 5 });
   const [submitted, setSubmitted] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    getApprovedReviews().then(setReviews).catch(console.error);
+  }, []);
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -28,7 +34,7 @@ export default function ReviewsPage() {
 
       <div className="mt-8 grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-4">
-          {mockReviews.map((review) => (
+          {reviews.map((review) => (
             <Card key={review.id}>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-brand-muted" />
@@ -44,6 +50,7 @@ export default function ReviewsPage() {
               <p className="mt-3 text-slate-700">{review.comment}</p>
             </Card>
           ))}
+          {reviews.length === 0 && <p className="text-slate-600">Aún no hay reseñas aprobadas.</p>}
         </div>
         <Card className="space-y-3">
           <h3 className="text-lg font-semibold text-brand-base">Dejar reseña</h3>

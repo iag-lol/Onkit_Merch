@@ -1,33 +1,51 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SimpleBar } from "@/components/charts/SimpleBar";
-import { mockQuotes, mockProducts, mockVisits } from "@/lib/mockData";
 import { formatCurrency } from "@/lib/utils";
-
-const kpis = [
-  { label: "Cotizaciones totales", value: mockQuotes.length, subtitle: "Últimos 30 días" },
-  { label: "Ventas confirmadas", value: 18, subtitle: "Simulado", tone: "success" },
-  { label: "Monto neto", value: formatCurrency(12500000), subtitle: "Sin IVA" },
-  { label: "Visitas", value: mockVisits.length * 35, subtitle: "Tráfico capturado" }
-];
-
-const ventasMes = [
-  { name: "Ene", value: 800000 },
-  { name: "Feb", value: 1200000 },
-  { name: "Mar", value: 1500000 },
-  { name: "Abr", value: 1800000 },
-  { name: "May", value: 2100000 }
-];
-
-const cotizacionesSegmento = [
-  { name: "Empresa", value: 24 },
-  { name: "Colegio", value: 18 },
-  { name: "Sport", value: 12 },
-  { name: "Evento", value: 20 },
-  { name: "Otro", value: 6 }
-];
+import { useEffect, useMemo, useState } from "react";
+import { loadProductsClient, loadQuotesClient, loadSalesClient, loadVisitsClient } from "@/lib/dataClient";
+import { Product, Quote, Sale, VisitLog } from "@/lib/types";
 
 export default function AdminDashboard() {
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [visits, setVisits] = useState<VisitLog[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    loadQuotesClient().then(setQuotes).catch(console.error);
+    loadSalesClient().then(setSales).catch(console.error);
+    loadVisitsClient().then(setVisits).catch(console.error);
+    loadProductsClient().then(setProducts).catch(console.error);
+  }, []);
+
+  const netAmount = useMemo(() => sales.reduce((acc, s) => acc + s.netAmount, 0), [sales]);
+  const kpis = [
+    { label: "Cotizaciones totales", value: quotes.length, subtitle: "Total registradas" },
+    { label: "Ventas confirmadas", value: sales.length, subtitle: "Registros en ventas" },
+    { label: "Monto neto", value: formatCurrency(netAmount), subtitle: "Sin IVA" },
+    { label: "Visitas", value: visits.length, subtitle: "Logs capturados" }
+  ];
+
+  const ventasMes = useMemo(() => {
+    const grouped: Record<string, number> = {};
+    sales.forEach((s) => {
+      const month = new Date(s.createdAt).toLocaleString("es-CL", { month: "short" });
+      grouped[month] = (grouped[month] ?? 0) + s.netAmount;
+    });
+    return Object.entries(grouped).map(([name, value]) => ({ name, value }));
+  }, [sales]);
+
+  const cotizacionesSegmento = useMemo(() => {
+    const grouped: Record<string, number> = {};
+    quotes.forEach((q) => {
+      grouped[q.clientType] = (grouped[q.clientType] ?? 0) + 1;
+    });
+    return Object.entries(grouped).map(([name, value]) => ({ name, value }));
+  }, [quotes]);
+
   return (
     <main className="space-y-6">
       <div className="flex items-center justify-between">
@@ -61,20 +79,21 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Top productos cotizados">
           <div className="space-y-3">
-            {mockProducts.map((product) => (
+            {products.slice(0, 5).map((product) => (
               <div key={product.id} className="flex items-center justify-between text-sm">
                 <div>
                   <p className="font-semibold text-brand-base">{product.name}</p>
                   <p className="text-slate-600">{product.category}</p>
                 </div>
-                <Badge tone="muted">+{Math.round(product.stock / 4)} cotizaciones</Badge>
+                <Badge tone="muted">Stock {product.stock}</Badge>
               </div>
             ))}
+            {products.length === 0 && <p className="text-sm text-slate-500">Sin productos publicados.</p>}
           </div>
         </Card>
         <Card title="Visitas recientes">
           <div className="space-y-3">
-            {mockVisits.slice(0, 5).map((visit) => (
+            {visits.slice(0, 5).map((visit) => (
               <div key={visit.id} className="flex items-center justify-between text-sm">
                 <div>
                   <p className="font-semibold text-brand-base">{visit.path}</p>
@@ -83,6 +102,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-slate-500">{visit.createdAt}</p>
               </div>
             ))}
+            {visits.length === 0 && <p className="text-sm text-slate-500">Aún no hay visitas registradas.</p>}
           </div>
         </Card>
       </div>

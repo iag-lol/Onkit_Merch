@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { mockProducts } from "@/lib/mockData";
-import { Segment } from "@/lib/types";
+import { Segment, Product } from "@/lib/types";
+import { loadProductsClient } from "@/lib/dataClient";
 
 const segmentCopy: Record<Segment, { title: string; text: string }> = {
   empresa: { title: "Empresas", text: "Kits de onboarding, regalos ejecutivos y campañas internas con branding premium." },
@@ -16,10 +16,13 @@ const segmentCopy: Record<Segment, { title: string; text: string }> = {
 
 export default function SegmentosPage() {
   const [selected, setSelected] = useState<Segment>("empresa");
-  const kits = useMemo(
-    () => mockProducts.filter((p) => p.segments.includes(selected)),
-    [selected]
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    loadProductsClient().then(setProducts).catch(console.error);
+  }, []);
+
+  const kits = useMemo(() => products.filter((p) => p.segments.includes(selected)), [products, selected]);
 
   return (
     <main className="container-page py-12">

@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { mockReviews } from "@/lib/mockData";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD } from "@/components/ui/table";
+import { loadReviewsClient, updateReviewStatus } from "@/lib/dataClient";
+import { Review } from "@/lib/types";
 
 export default function ResenasPage() {
-  const [reviews, setReviews] = useState(mockReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    loadReviewsClient(false).then(setReviews).catch(console.error);
+  }, []);
 
   const updateStatus = (id: string, status: "aprobada" | "rechazada") => {
-    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    updateReviewStatus(id, status)
+      .then(() => setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r))))
+      .catch(console.error);
   };
 
   return (
@@ -52,6 +59,13 @@ export default function ResenasPage() {
                 </TD>
               </TR>
             ))}
+            {reviews.length === 0 && (
+              <TR>
+                <TD colSpan={6} className="text-center text-sm text-slate-500">
+                  No hay reseñas registradas.
+                </TD>
+              </TR>
+            )}
           </tbody>
         </Table>
       </Card>

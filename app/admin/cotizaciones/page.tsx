@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { mockQuotes } from "@/lib/mockData";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD } from "@/components/ui/table";
@@ -9,9 +8,15 @@ import { Modal } from "@/components/ui/modal";
 import { formatCurrency } from "@/lib/utils";
 import { generateQuotePdf } from "@/lib/pdf";
 import { Quote } from "@/lib/types";
+import { loadQuotesClient } from "@/lib/dataClient";
 
 export default function CotizacionesAdmin() {
   const [selected, setSelected] = useState<Quote | null>(null);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+
+  useEffect(() => {
+    loadQuotesClient().then(setQuotes).catch(console.error);
+  }, []);
 
   return (
     <main className="space-y-4">
@@ -34,7 +39,7 @@ export default function CotizacionesAdmin() {
             <TH></TH>
           </THead>
           <tbody>
-            {mockQuotes.map((quote) => (
+            {quotes.map((quote) => (
               <TR key={quote.id}>
                 <TD>{quote.id}</TD>
                 <TD>
@@ -54,6 +59,13 @@ export default function CotizacionesAdmin() {
                 </TD>
               </TR>
             ))}
+            {quotes.length === 0 && (
+              <TR>
+                <TD colSpan={6} className="text-center text-sm text-slate-500">
+                  No hay cotizaciones registradas.
+                </TD>
+              </TR>
+            )}
           </tbody>
         </Table>
       </Card>

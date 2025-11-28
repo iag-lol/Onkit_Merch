@@ -69,3 +69,24 @@ export interface InventoryMovement {
   reason?: string;
   createdAt: string;
 }
+
+export interface Sale {
+  id: string;
+  createdAt: string;
+  netAmount: number;
+  vat: number;
+  total: number;
+  clientType?: Segment;
+  customer?: string;
+}
+
+export interface ConfigData {
+  nombreLegal?: string;
+  rut?: string;
+  giro?: string;
+  direccion?: string;
+  correo?: string;
+  telefono?: string;
+  iva?: number;
+  minimo_unidades?: number;
+}

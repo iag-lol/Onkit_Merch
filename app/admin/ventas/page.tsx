@@ -1,27 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-
-const ventas = [
-  { id: "V-100", fecha: "2024-05-02", cliente: "InnovaCorp", tipo: "empresa", neto: 1200000, iva: 228000 },
-  { id: "V-101", fecha: "2024-05-12", cliente: "Colegio Andes", tipo: "colegio", neto: 2640000, iva: 501600 },
-  { id: "V-102", fecha: "2024-05-18", cliente: "Eventos Chile", tipo: "evento", neto: 900000, iva: 171000 }
-];
+import { loadSalesClient } from "@/lib/dataClient";
+import { Sale } from "@/lib/types";
 
 export default function VentasPage() {
   const [periodo, setPeriodo] = useState("mensual");
-  const totales = ventas.reduce(
-    (acc, v) => {
-      acc.neto += v.neto;
-      acc.iva += v.iva;
-      acc.total += v.neto + v.iva;
-      return acc;
-    },
-    { neto: 0, iva: 0, total: 0 }
+  const [ventas, setVentas] = useState<Sale[]>([]);
+
+  useEffect(() => {
+    loadSalesClient().then(setVentas).catch(console.error);
+  }, []);
+
+  const totales = useMemo(
+    () =>
+      ventas.reduce(
+        (acc, v) => {
+          acc.neto += v.netAmount;
+          acc.iva += v.vat;
+          acc.total += v.total;
+          return acc;
+        },
+        { neto: 0, iva: 0, total: 0 }
+      ),
+    [ventas]
   );
 
   return (
@@ -77,14 +83,21 @@ export default function VentasPage() {
           {ventas.map((venta) => (
             <TR key={venta.id}>
               <TD>{venta.id}</TD>
-              <TD>{venta.fecha}</TD>
-              <TD>{venta.cliente}</TD>
-              <TD className="capitalize">{venta.tipo}</TD>
-              <TD>{formatCurrency(venta.neto)}</TD>
-              <TD>{formatCurrency(venta.iva)}</TD>
-              <TD>{formatCurrency(venta.neto + venta.iva)}</TD>
+              <TD>{new Date(venta.createdAt).toLocaleDateString()}</TD>
+              <TD>{venta.customer ?? "-"}</TD>
+              <TD className="capitalize">{venta.clientType ?? "-"}</TD>
+              <TD>{formatCurrency(venta.netAmount)}</TD>
+              <TD>{formatCurrency(venta.vat)}</TD>
+              <TD>{formatCurrency(venta.total)}</TD>
             </TR>
           ))}
+          {ventas.length === 0 && (
+            <TR>
+              <TD colSpan={7} className="text-center text-sm text-slate-500">
+                No hay ventas registradas.
+              </TD>
+            </TR>
+          )}
         </tbody>
       </Table>
     </main>

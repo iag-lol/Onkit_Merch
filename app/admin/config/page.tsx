@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfigData } from "@/lib/types";
+import { loadConfigClient, updateConfig } from "@/lib/dataClient";
 
-const defaults = {
+const defaults: ConfigData = {
   nombreLegal: "ONKIT MERCH SPA",
   rut: "76.xxx.xxx-x",
   giro: "Merchandising y producción textil",
@@ -12,16 +14,23 @@ const defaults = {
   correo: "onkitmerch@outlook.com",
   telefono: "+56 9 8475 2936",
   iva: 19,
-  minimo: 10
+  minimo_unidades: 10
 };
 
 export default function ConfigPage() {
-  const [config, setConfig] = useState(defaults);
+  const [config, setConfig] = useState<ConfigData>(defaults);
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    loadConfigClient()
+      .then((data) => data && setConfig(data))
+      .catch(console.error);
+  }, []);
+
   const save = () => {
-    setSaved(true);
-    console.info("Config guardada", config);
+    updateConfig(config)
+      .then(() => setSaved(true))
+      .catch(console.error);
   };
 
   return (
@@ -79,8 +88,8 @@ export default function ConfigPage() {
           <input
             type="number"
             className="rounded-xl border border-slate-200 px-3 py-2"
-            value={config.minimo}
-            onChange={(e) => setConfig((c) => ({ ...c, minimo: Number(e.target.value) }))}
+            value={config.minimo_unidades}
+            onChange={(e) => setConfig((c) => ({ ...c, minimo_unidades: Number(e.target.value) }))}
             placeholder="Mínimo unidades"
           />
         </div>

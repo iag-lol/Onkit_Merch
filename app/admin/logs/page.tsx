@@ -1,18 +1,25 @@
 "use client";
 
-import { useMemo } from "react";
-import { mockVisits } from "@/lib/mockData";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD } from "@/components/ui/table";
+import { loadVisitsClient } from "@/lib/dataClient";
+import { VisitLog } from "@/lib/types";
 
 export default function LogsPage() {
+  const [visits, setVisits] = useState<VisitLog[]>([]);
+
+  useEffect(() => {
+    loadVisitsClient().then(setVisits).catch(console.error);
+  }, []);
+
   const stats = useMemo(() => {
     const byDevice: Record<string, number> = {};
-    mockVisits.forEach((v) => {
+    visits.forEach((v) => {
       byDevice[v.device] = (byDevice[v.device] ?? 0) + 1;
     });
     return byDevice;
-  }, []);
+  }, [visits]);
 
   return (
     <main className="space-y-4">
@@ -43,7 +50,7 @@ export default function LogsPage() {
             <TH>Device</TH>
           </THead>
           <tbody>
-            {mockVisits.map((visit) => (
+            {visits.map((visit) => (
               <TR key={visit.id}>
                 <TD>{visit.createdAt}</TD>
                 <TD>{visit.path}</TD>
@@ -52,6 +59,13 @@ export default function LogsPage() {
                 <TD className="capitalize">{visit.device}</TD>
               </TR>
             ))}
+            {visits.length === 0 && (
+              <TR>
+                <TD colSpan={5} className="text-center text-sm text-slate-500">
+                  Sin visitas registradas.
+                </TD>
+              </TR>
+            )}
           </tbody>
         </Table>
       </Card>

@@ -1,17 +1,30 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { mockProducts } from "@/lib/mockData";
-
-const movimientos = [
-  { id: "M1", producto: "Kit Ejecutivo Premium", tipo: "entrada", cantidad: 50, fecha: "2024-05-10" },
-  { id: "M2", producto: "Kit Escolar Completo", tipo: "salida", cantidad: 30, fecha: "2024-05-12" },
-  { id: "M3", producto: "Kit Evento Corporativo", tipo: "ajuste", cantidad: 10, fecha: "2024-05-14" }
-];
+import { loadProductsClient, loadInventoryMovementsClient } from "@/lib/dataClient";
+import { Product, InventoryMovement } from "@/lib/types";
 
 export default function InventarioPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [movimientos, setMovimientos] = useState<InventoryMovement[]>([]);
+
+  useEffect(() => {
+    loadProductsClient().then(setProducts).catch(console.error);
+    loadInventoryMovementsClient().then(setMovimientos).catch(console.error);
+  }, []);
+
+  const movementsWithName = useMemo(
+    () =>
+      movimientos.map((m) => ({
+        ...m,
+        nombre: products.find((p) => p.id === m.productId)?.name || m.productId
+      })),
+    [movimientos, products]
+  );
+
   return (
     <main className="space-y-6">
       <div className="flex items-center justify-between">
@@ -30,7 +43,7 @@ export default function InventarioPage() {
             <TH>Permite muestra</TH>
           </THead>
           <tbody>
-            {mockProducts.map((p) => (
+            {products.map((p) => (
               <TR key={p.id}>
                 <TD>
                   <p className="font-semibold text-brand-base">{p.name}</p>
@@ -40,6 +53,13 @@ export default function InventarioPage() {
                 <TD>{p.allowSample ? "Sí" : "No"}</TD>
               </TR>
             ))}
+            {products.length === 0 && (
+              <TR>
+                <TD colSpan={3} className="text-center text-sm text-slate-500">
+                  Sin productos cargados.
+                </TD>
+              </TR>
+            )}
           </tbody>
         </Table>
       </Card>
@@ -54,15 +74,22 @@ export default function InventarioPage() {
             <TH>Fecha</TH>
           </THead>
           <tbody>
-            {movimientos.map((m) => (
+            {movementsWithName.map((m) => (
               <TR key={m.id}>
                 <TD>{m.id}</TD>
-                <TD>{m.producto}</TD>
-                <TD className="capitalize">{m.tipo}</TD>
-                <TD>{m.cantidad}</TD>
-                <TD>{m.fecha}</TD>
+                <TD>{m.nombre}</TD>
+                <TD className="capitalize">{m.type}</TD>
+                <TD>{m.quantity}</TD>
+                <TD>{new Date(m.createdAt).toLocaleDateString()}</TD>
               </TR>
             ))}
+            {movementsWithName.length === 0 && (
+              <TR>
+                <TD colSpan={5} className="text-center text-sm text-slate-500">
+                  No hay movimientos registrados.
+                </TD>
+              </TR>
+            )}
           </tbody>
         </Table>
       </Card>

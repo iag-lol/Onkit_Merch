@@ -1,27 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockProducts } from "@/lib/mockData";
 import { formatCurrency } from "@/lib/utils";
 import { useCart } from "@/context/cart";
-
-const categorias = Array.from(new Set(mockProducts.map((p) => p.category)));
+import { loadProductsClient } from "@/lib/dataClient";
+import { Product } from "@/lib/types";
 
 export default function CatalogPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState<string | null>(null);
   const [segment, setSegment] = useState<string | null>(null);
   const { addItem } = useCart();
 
+  useEffect(() => {
+    loadProductsClient().then(setProducts).catch(console.error);
+  }, []);
+
+  const categorias = useMemo(() => Array.from(new Set(products.map((p) => p.category))), [products]);
+
   const filtered = useMemo(() => {
-    return mockProducts.filter((p) => {
+    return products.filter((p) => {
       if (category && p.category !== category) return false;
       if (segment && !p.segments.includes(segment as any)) return false;
       return true;
     });
-  }, [category, segment]);
+  }, [category, segment, products]);
 
   return (
     <main className="container-page py-12">

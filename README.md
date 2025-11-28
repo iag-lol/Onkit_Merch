@@ -23,7 +23,8 @@ NEXT_PUBLIC_EMAIL_WEBHOOK=https://...
 - `components/` UI reutilizable (cards, tablas, modales, charts) y layout.
 - `context/cart.tsx` carrito B2B con mínimos y cálculo de IVA.
 - `lib/supabaseClient.ts` helper para inicializar cliente.
-- `lib/mockData.ts` data de ejemplo para front sin backend.
+- `lib/dataClient.ts` loaders desde Supabase (productos, cotizaciones, reseñas, visitas, etc).
+- `lib/mappers.ts` transforma filas de Supabase a tipos de front.
 - `lib/pdf.ts` generación de PDF de cotización con jsPDF.
 - `lib/analytics.ts` logging de visitas a tabla `visitas` (fallback a consola si no hay Supabase).
 - `supabase/schema.sql` definición de tablas sugeridas.

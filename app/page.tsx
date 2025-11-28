@@ -1,9 +1,13 @@
+import "use client";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { mockProducts, mockReviews } from "@/lib/mockData";
+import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { loadProductsClient, loadReviewsClient } from "@/lib/dataClient";
+import { Product, Review } from "@/lib/types";
 import { OrganizationSchema, LocalBusinessSchema, WebsiteSchema } from "@/components/seo/StructuredData";
 
 const segmentos = [
@@ -15,6 +19,14 @@ const segmentos = [
 ];
 
 export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    loadProductsClient().then((data) => setProducts(data.slice(0, 4))).catch(console.error);
+    loadReviewsClient().then(setReviews).catch(console.error);
+  }, []);
+
   return (
     <main>
       <OrganizationSchema />
@@ -124,7 +136,7 @@ export default function HomePage() {
           <Button href="/catalogo">Ir al catálogo completo</Button>
         </div>
         <div className="container-page mt-8 grid gap-6 md:grid-cols-2">
-          {mockProducts.map((product) => (
+          {products.map((product) => (
             <Card key={product.id} className="flex flex-col gap-3 md:flex-row md:items-center">
               <div className="h-28 w-full rounded-2xl bg-brand-muted/60 md:w-32" />
               <div className="flex-1">
@@ -141,6 +153,7 @@ export default function HomePage() {
               <Button href={`/catalogo#${product.id}`}>Agregar</Button>
             </Card>
           ))}
+          {products.length === 0 && <p className="text-slate-600">Aún no hay productos publicados.</p>}
         </div>
       </section>
 
@@ -155,7 +168,7 @@ export default function HomePage() {
           </Button>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {mockReviews.map((review) => (
+          {reviews.map((review) => (
             <Card key={review.id}>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-brand-muted" />
@@ -171,6 +184,7 @@ export default function HomePage() {
               <p className="mt-3 text-slate-700">{review.comment}</p>
             </Card>
           ))}
+          {reviews.length === 0 && <p className="text-slate-600">Aún no hay reseñas aprobadas.</p>}
         </div>
       </section>
 

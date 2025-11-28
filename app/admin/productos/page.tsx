@@ -1,21 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { mockProducts } from "@/lib/mockData";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, THead, TH, TR, TD, EmptyState } from "@/components/ui/table";
 import { Modal } from "@/components/ui/modal";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/lib/types";
+import { loadProductsClient } from "@/lib/dataClient";
 
 export default function AdminProducts() {
   const [selected, setSelected] = useState<Product | null>(null);
   const [filter, setFilter] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const products = useMemo(
-    () => mockProducts.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase())),
-    [filter]
+  useEffect(() => {
+    loadProductsClient(true).then(setProducts).catch(console.error);
+  }, []);
+
+  const filtered = useMemo(
+    () => products.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase())),
+    [filter, products]
   );
 
   return (
@@ -46,7 +51,7 @@ export default function AdminProducts() {
           <TH></TH>
         </THead>
         <tbody>
-          {products.map((product) => (
+          {filtered.map((product) => (
             <TR key={product.id}>
               <TD>
                 <p className="font-semibold text-brand-base">{product.name}</p>
@@ -67,7 +72,7 @@ export default function AdminProducts() {
             </TR>
           ))}
         </tbody>
-        {products.length === 0 && <EmptyState title="Sin productos" description="Crea tu primer producto." />}
+        {filtered.length === 0 && <EmptyState title="Sin productos" description="Crea tu primer producto." />}
       </Table>
 
       <Modal open={!!selected} title={`Editar ${selected?.name ?? ""}`} onClose={() => setSelected(null)}>
