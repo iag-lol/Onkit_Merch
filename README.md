@@ -17,6 +17,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=ey...
 NEXT_PUBLIC_EMAIL_WEBHOOK=https://...
 # Opcional server (para insert/updates desde el backend)
 SUPABASE_SERVICE_ROLE_KEY=ey...
+# Para correo gratis con Resend (usa /api/email)
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxx
+
+### Correo sin costo (Resend)
+- En Render (o `.env.local`) define:
+  - `NEXT_PUBLIC_EMAIL_WEBHOOK=/api/email`
+  - `RESEND_API_KEY` (puedes usar la clave de onboarding de Resend con 100 correos/mes).
+- El endpoint `/api/email` usa `from: onboarding@resend.dev` (no requiere dominio verificado).
+- Si quieres otro proveedor, apunta `NEXT_PUBLIC_EMAIL_WEBHOOK` a tu propia API y ajusta la lógica allí.
 ```
 
 ## Estructura clave
