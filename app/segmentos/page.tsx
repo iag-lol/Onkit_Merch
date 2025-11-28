@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { mockProducts } from "@/lib/mockData";
+import { Segment } from "@/lib/types";
 
 const segmentCopy: Record<string, { title: string; text: string }> = {
   empresa: { title: "Empresas", text: "Kits de onboarding, regalos ejecutivos y campañas internas con branding premium." },
@@ -14,7 +15,7 @@ const segmentCopy: Record<string, { title: string; text: string }> = {
 };
 
 export default function SegmentosPage() {
-  const [selected, setSelected] = useState<keyof typeof segmentCopy>("empresa");
+  const [selected, setSelected] = useState<Segment>("empresa");
   const kits = useMemo(
     () => mockProducts.filter((p) => p.segments.includes(selected)),
     [selected]
