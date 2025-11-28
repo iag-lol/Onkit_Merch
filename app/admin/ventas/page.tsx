@@ -6,6 +6,7 @@ import { Table, THead, TH, TR, TD } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { loadSalesClient } from "@/lib/dataClient";
+import jsPDF from "jspdf";
 import { Sale } from "@/lib/types";
 
 export default function VentasPage() {
@@ -30,6 +31,57 @@ export default function VentasPage() {
     [ventas]
   );
 
+  const filtered = useMemo(() => {
+    const now = new Date();
+    return ventas.filter((v) => {
+      const d = new Date(v.createdAt);
+      if (periodo === "mensual") return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      if (periodo === "trimestral") {
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        const saleQuarter = Math.floor(d.getMonth() / 3);
+        return saleQuarter === currentQuarter && d.getFullYear() === now.getFullYear();
+      }
+      if (periodo === "anual") return d.getFullYear() === now.getFullYear();
+      return true;
+    });
+  }, [periodo, ventas]);
+
+  const exportCsv = () => {
+    const header = "ID,Fecha,Cliente,Tipo,Neto,IVA,Total\n";
+    const rows = filtered
+      .map(
+        (v) =>
+          `${v.id},"${new Date(v.createdAt).toLocaleDateString()}","${v.customer ?? ""}",${v.clientType ?? ""},${v.netAmount},${v.vat},${v.total}`
+      )
+      .join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ventas.csv";
+    link.click();
+  };
+
+  const exportPdf = () => {
+    const doc = new jsPDF();
+    doc.text("Ventas ONKIT MERCH", 14, 16);
+    // @ts-ignore
+    doc.autoTable({
+      head: [["ID", "Fecha", "Cliente", "Tipo", "Neto", "IVA", "Total"]],
+      body: filtered.map((v) => [
+        v.id,
+        new Date(v.createdAt).toLocaleDateString(),
+        v.customer ?? "",
+        v.clientType ?? "",
+        v.netAmount,
+        v.vat,
+        v.total
+      ]),
+      startY: 22
+    });
+    doc.save("ventas.pdf");
+  };
+
   return (
     <main className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -47,8 +99,10 @@ export default function VentasPage() {
             <option value="trimestral">Trimestral</option>
             <option value="anual">Anual</option>
           </select>
-          <Button variant="secondary">Descargar CSV</Button>
-          <Button>Descargar PDF</Button>
+          <Button variant="secondary" onClick={exportCsv}>
+            Descargar CSV
+          </Button>
+          <Button onClick={exportPdf}>Descargar PDF</Button>
         </div>
       </div>
 
@@ -80,7 +134,7 @@ export default function VentasPage() {
           <TH>Total</TH>
         </THead>
         <tbody>
-          {ventas.map((venta) => (
+          {filtered.map((venta) => (
             <TR key={venta.id}>
               <TD>{venta.id}</TD>
               <TD>{new Date(venta.createdAt).toLocaleDateString()}</TD>
@@ -91,7 +145,7 @@ export default function VentasPage() {
               <TD>{formatCurrency(venta.total)}</TD>
             </TR>
           ))}
-          {ventas.length === 0 && (
+          {filtered.length === 0 && (
             <TR>
               <TD colSpan={7} className="text-center text-sm text-slate-500">
                 No hay ventas registradas.

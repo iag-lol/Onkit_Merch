@@ -8,11 +8,12 @@ import { Modal } from "@/components/ui/modal";
 import { formatCurrency } from "@/lib/utils";
 import { generateQuotePdf } from "@/lib/pdf";
 import { Quote } from "@/lib/types";
-import { loadQuotesClient } from "@/lib/dataClient";
+import { convertQuoteToSale, loadQuotesClient } from "@/lib/dataClient";
 
 export default function CotizacionesAdmin() {
   const [selected, setSelected] = useState<Quote | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadQuotesClient().then(setQuotes).catch(console.error);
@@ -54,7 +55,26 @@ export default function CotizacionesAdmin() {
                     <Button variant="secondary" onClick={() => setSelected(quote)}>
                       Ver
                     </Button>
-                    <Button variant="ghost">Convertir en venta</Button>
+                    <Button
+                      variant="ghost"
+                      disabled={convertingId === quote.id}
+                      onClick={async () => {
+                        setConvertingId(quote.id);
+                        try {
+                          await convertQuoteToSale(quote);
+                          setQuotes((prev) =>
+                            prev.map((q) => (q.id === quote.id ? { ...q, status: "venta" } : q))
+                          );
+                        } catch (err) {
+                          console.error(err);
+                          alert("No se pudo convertir la cotización en venta.");
+                        } finally {
+                          setConvertingId(null);
+                        }
+                      }}
+                    >
+                      {convertingId === quote.id ? "Convirtiendo..." : "Convertir en venta"}
+                    </Button>
                   </div>
                 </TD>
               </TR>
