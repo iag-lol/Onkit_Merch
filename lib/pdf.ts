@@ -23,7 +23,6 @@ export const generateQuotePdf = (quote: Quote) => {
     `$${(item.unitPrice * item.quantity).toLocaleString()}`
   ]);
 
-  // @ts-ignore jsPDF autotable types not bundled aquí
   doc.autoTable({
     head: [["Producto", "Cant.", "Precio unitario (sin IVA)", "Subtotal"]],
     body: rows,

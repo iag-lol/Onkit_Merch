@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { mockProducts } from "@/lib/mockData";
 import { Segment } from "@/lib/types";
 
-const segmentCopy: Record<string, { title: string; text: string }> = {
+const segmentCopy: Record<Segment, { title: string; text: string }> = {
   empresa: { title: "Empresas", text: "Kits de onboarding, regalos ejecutivos y campañas internas con branding premium." },
   colegio: { title: "Colegios", text: "Uniformes, kits deportivos, eventos estudiantiles y bienvenida docente." },
   sport: { title: "Sport / Clubes", text: "Entrenamiento, staff técnico y fan shop para hinchas." },
@@ -32,7 +32,7 @@ export default function SegmentosPage() {
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-5">
-        {(Object.keys(segmentCopy) as (keyof typeof segmentCopy)[]).map((seg) => (
+        {(Object.keys(segmentCopy) as Segment[]).map((seg) => (
           <Card
             key={seg}
             className={`cursor-pointer border ${selected === seg ? "border-brand-accent shadow-lg" : "border-slate-100"}`}

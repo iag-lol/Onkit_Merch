@@ -1,3 +1,5 @@
+"use client";
+
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 interface Props {
